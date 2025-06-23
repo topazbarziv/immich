@@ -419,7 +419,7 @@ export class SyncService extends BaseService {
         }
 
         const startId = getStartId(createId, backfillCheckpoint);
-        const backfill = this.syncRepository.getAlbumAssetsBackfill(album.id, auth.user.id, startId, endId);
+        const backfill = this.syncRepository.getAlbumAssetsBackfill(album.id, startId, endId);
 
         for await (const { updateId, ...data } of backfill) {
           send(response, { type: backfillType, ids: [createId, updateId], data: mapSyncAssetV1(data) });
@@ -465,7 +465,7 @@ export class SyncService extends BaseService {
         }
 
         const startId = getStartId(createId, backfillCheckpoint);
-        const backfill = this.syncRepository.getAlbumAssetExifsBackfill(album.id, auth.user.id, startId, endId);
+        const backfill = this.syncRepository.getAlbumAssetExifsBackfill(album.id, startId, endId);
 
         for await (const { updateId, ...data } of backfill) {
           send(response, { type: backfillType, ids: [createId, updateId], data });

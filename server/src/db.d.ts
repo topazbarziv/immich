@@ -92,6 +92,8 @@ export interface AlbumsAssetsAssets {
   albumsId: string;
   assetsId: string;
   createdAt: Generated<Timestamp>;
+  updatedAt: Generated<Timestamp>;
+  updateId: Generated<string>;
 }
 
 export interface AlbumAssetsAudit {

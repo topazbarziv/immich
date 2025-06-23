@@ -352,15 +352,9 @@ export const columns = {
     'deletedAt',
     'isFavorite',
     'visibility',
-    'updateId',
     'duration',
   ],
-  syncAlbumUser: [
-    'albums_shared_users_users.albumsId as albumId',
-    'albums_shared_users_users.usersId as userId',
-    'albums_shared_users_users.role',
-    'albums_shared_users_users.updateId',
-  ],
+  syncAlbumUser: ['album_users.albumsId as albumId', 'album_users.usersId as userId', 'album_users.role'],
   stack: ['stack.id', 'stack.primaryAssetId', 'ownerId'],
   syncAssetExif: [
     'exif.assetId',
@@ -388,7 +382,6 @@ export const columns = {
     'exif.profileDescription',
     'exif.rating',
     'exif.fps',
-    'exif.updateId',
   ],
   exif: [
     'exif.assetId',
