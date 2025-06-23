@@ -240,7 +240,7 @@ export class SyncRepository {
   }
 
   @GenerateSql({ params: [DummyValue.UUID], stream: true })
-  getAlbumAssetDeletes(userId: string, ack?: SyncAck) {
+  getAlbumToAssetDeletes(userId: string, ack?: SyncAck) {
     return this.db
       .selectFrom('album_assets_audit')
       .select(['id', 'assetId', 'albumId'])
@@ -374,6 +374,33 @@ export class SyncRepository {
       .where('assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
       .$if(!!ack, (qb) => qb.where('assets.updateId', '>', ack!.updateId))
       .orderBy('assets.updateId', 'asc')
+      .innerJoin('albums', 'albums.id', 'album_assets.albumsId')
+      .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'album_assets.albumsId')
+      .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('album_users.usersId', '=', userId)]))
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID, DummyValue.UUID, DummyValue.UUID], stream: true })
+  getAlbumToAssetBackfill(albumId: string, afterUpdateId: string | undefined, beforeUpdateId: string) {
+    return this.db
+      .selectFrom('albums_assets_assets as album_assets')
+      .select(['album_assets.assetsId as assetId', 'album_assets.albumsId as albumId', 'album_assets.updateId'])
+      .where('album_assets.albumsId', '=', albumId)
+      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .where('album_assets.updateId', '<=', beforeUpdateId)
+      .$if(!!afterUpdateId, (eb) => eb.where('album_assets.updateId', '>=', afterUpdateId!))
+      .orderBy('album_assets.updateId', 'asc')
+      .stream();
+  }
+
+  @GenerateSql({ params: [DummyValue.UUID], stream: true })
+  getAlbumToAssetUpserts(userId: string, ack?: SyncAck) {
+    return this.db
+      .selectFrom('albums_assets_assets as album_assets')
+      .select(['album_assets.assetsId as assetId', 'album_assets.albumsId as albumId', 'album_assets.updateId'])
+      .where('album_assets.updatedAt', '<', sql.raw<Date>("now() - interval '1 millisecond'"))
+      .$if(!!ack, (qb) => qb.where('album_assets.updateId', '>', ack!.updateId))
+      .orderBy('album_assets.updateId', 'asc')
       .innerJoin('albums', 'albums.id', 'album_assets.albumsId')
       .leftJoin('albums_shared_users_users as album_users', 'album_users.albumsId', 'album_assets.albumsId')
       .where((eb) => eb.or([eb('albums.ownerId', '=', userId), eb('album_users.usersId', '=', userId)]))
