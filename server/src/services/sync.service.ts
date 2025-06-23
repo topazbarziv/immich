@@ -166,10 +166,10 @@ export class SyncService extends BaseService {
           break;
         }
 
-        // case SyncRequestType.AlbumAssetsV1: {
-        //   await this.syncAlbumAssetsV1(response, checkpointMap, auth, sessionId);
-        //   break;
-        // }
+        case SyncRequestType.AlbumAssetsV1: {
+          await this.syncAlbumAssetsV1(response, checkpointMap, auth, sessionId);
+          break;
+        }
 
         case SyncRequestType.AlbumAssetExifsV1: {
           await this.syncAlbumAssetExifsV1(response, checkpointMap, auth, sessionId);
@@ -398,14 +398,6 @@ export class SyncService extends BaseService {
 
     const backfillCheckpoint = checkpointMap[backfillType];
     const upsertCheckpoint = checkpointMap[upsertType];
-
-    const deletes = this.syncRepository.getAlbumAssetDeletes(
-      auth.user.id,
-      checkpointMap[SyncEntityType.AlbumAssetDeleteV1],
-    );
-    for await (const { id, ...data } of deletes) {
-      send(response, { type: SyncEntityType.AlbumAssetDeleteV1, ids: [id], data });
-    }
 
     const albums = await this.syncRepository.getAlbumBackfill(auth.user.id, backfillCheckpoint?.updateId);
 
